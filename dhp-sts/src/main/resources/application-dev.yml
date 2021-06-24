@@ -1,0 +1,6 @@
+logging:
+  level:
+    com.subiger.dhp: debug
+    org.apache.cxf: info
+    org.apache.wss4j: info
+    org.ehcache: info

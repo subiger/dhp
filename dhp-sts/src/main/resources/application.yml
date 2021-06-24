@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: DHP STS
+server:
+  servlet:
+    context-path: /dhp-sts
+logging:
+  level:
+    org.apache.cxf: warn
+    org.apache.wss4j: warn
+    org.ehcache: warn
