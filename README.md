@@ -1,1 +1,1 @@
-# Digital Health Platform ![build](https://github.com/subiger/dhp/workflows/build/badge.svg)
+# Digital Health Platform ![build](https://github.com/subiger/dhp/workflows/build/badge.svg) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dhp&metric=alert_status)](https://sonarcloud.io/dashboard?id=dhp)
