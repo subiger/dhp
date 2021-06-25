@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+                  xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
+                  xmlns:wsp="http://www.w3.org/ns/ws-policy"
+                  xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702"
+                  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                  xmlns:wst="http://docs.oasis-open.org/ws-sx/ws-trust/200512"
+                  xmlns:tns="http://docs.oasis-open.org/ws-sx/ws-trust/200512/wsdl"
+                  targetNamespace="http://docs.oasis-open.org/ws-sx/ws-trust/200512/wsdl">
+    <wsdl:types>
+        <xs:schema>
+            <xs:import namespace="http://docs.oasis-open.org/ws-sx/ws-trust/200512"
+                       schemaLocation="../schema/ws-trust.xsd"/>
+        </xs:schema>
+    </wsdl:types>
+
+    <wsdl:message name="RequestSecurityTokenMsg">
+        <wsdl:part name="request" element="wst:RequestSecurityToken"/>
+    </wsdl:message>
+
+    <wsdl:message name="RequestSecurityTokenResponseMsg">
+        <wsdl:part name="response" element="wst:RequestSecurityTokenResponse"/>
+    </wsdl:message>
+
+    <wsdl:message name="RequestSecurityTokenResponseCollectionMsg">
+        <wsdl:part name="responseCollection" element="wst:RequestSecurityTokenResponseCollection"/>
+    </wsdl:message>
+
+    <wsdl:portType name="SecurityTokenServicePortType">
+        <wsdl:operation name="Issue">
+            <wsdl:input wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue"
+                        message="tns:RequestSecurityTokenMsg"/>
+            <wsdl:output wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RSTRC/IssueFinal"
+                         message="tns:RequestSecurityTokenResponseCollectionMsg"/>
+        </wsdl:operation>
+    </wsdl:portType>
+
+    <wsdl:binding name="SecurityTokenServiceBinding" type="tns:SecurityTokenServicePortType">
+        <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="Issue">
+            <soap12:operation soapAction="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+
+    <wsdl:service name="SecurityTokenService">
+        <wsdl:port name="SecurityTokenServicePort" binding="tns:SecurityTokenServiceBinding">
+            <soap12:address location=""/>
+            <wsp:Policy>
+                <sp:AsymmetricBinding>
+                    <wsp:Policy>
+                        <sp:AlgorithmSuite>
+                            <wsp:Policy>
+                                <sp:Basic256/>
+                            </wsp:Policy>
+                        </sp:AlgorithmSuite>
+                    </wsp:Policy>
+                </sp:AsymmetricBinding>
+                <sp:SignedSupportingTokens>
+                    <wsp:Policy>
+                        <sp:SamlToken
+                                sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
+                            <wsp:Policy>
+                                <sp:WssSamlV20Token11/>
+                            </wsp:Policy>
+                        </sp:SamlToken>
+                    </wsp:Policy>
+                </sp:SignedSupportingTokens>
+            </wsp:Policy>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>
