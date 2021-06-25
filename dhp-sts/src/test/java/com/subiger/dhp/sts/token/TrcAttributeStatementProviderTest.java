@@ -59,7 +59,16 @@ class TrcAttributeStatementProviderTest {
         var providerParameters = createProviderParameters();
         var tokenRequirements = providerParameters.getTokenRequirements();
 
-        Element trcParameters = createTrcParameters();
+        Element trcParameters = createTrcParameters(
+                // @formatter:off
+                "<trc:TRCParameters xmlns:trc='http://epsos.eu/trc'>" +
+                "<trc:PatientId>" + PATIENT_ID + "</trc:PatientId>" +
+                "<trc:PurposeOfUse>" + PURPOSE_OF_USE + "</trc:PurposeOfUse>" +
+                "<trc:PrescriptionId>" + PRESCRIPTION_ID + "</trc:PrescriptionId>" +
+                "<trc:DispensationPinCode>" + DISPENSATION_PIN_CODE + "</trc:DispensationPinCode>" +
+                "</trc:TRCParameters>"
+                // @formatter:on
+        );
         tokenRequirements.addCustomContent(trcParameters);
 
         var providerResponse = tokenProvider.createToken(providerParameters);
@@ -76,6 +85,56 @@ class TrcAttributeStatementProviderTest {
         Assertions.assertTrue(tokenString.contains(Constants.PURPOSE_OF_USE) && tokenString.contains(PURPOSE_OF_USE));
         Assertions.assertTrue(tokenString.contains(Constants.PRESCRIPTION_ID) && tokenString.contains(PRESCRIPTION_ID));
         Assertions.assertTrue(tokenString.contains(Constants.DISPENSATION_PIN_CODE) && tokenString.contains(DISPENSATION_PIN_CODE));
+    }
+
+    @Test
+    void testTrcAssertionWithoutTrcParameters() throws Exception {
+        var tokenProvider = new SAMLTokenProvider();
+        tokenProvider.setAttributeStatementProviders(Collections.singletonList(new TrcAttributeStatementProvider()));
+
+        var providerParameters = createProviderParameters();
+
+        Assertions.assertThrows(RuntimeException.class, () -> tokenProvider.createToken(providerParameters));
+    }
+
+    @Test
+    void testTrcAssertionInvalidNamespace() throws Exception {
+        var tokenProvider = new SAMLTokenProvider();
+        tokenProvider.setAttributeStatementProviders(Collections.singletonList(new TrcAttributeStatementProvider()));
+
+        var providerParameters = createProviderParameters();
+        var tokenRequirements = providerParameters.getTokenRequirements();
+
+        Element trcParameters = createTrcParameters(
+                // @formatter:off
+                "<trc:TRCParameters xmlns:trc='http://dhp.subiger.com/trc'>" +
+                        "<trc:PurposeOfUse>" + PURPOSE_OF_USE + "</trc:PurposeOfUse>" +
+                        "</trc:TRCParameters>"
+                // @formatter:on
+        );
+        tokenRequirements.addCustomContent(trcParameters);
+
+        Assertions.assertThrows(RuntimeException.class, () -> tokenProvider.createToken(providerParameters));
+    }
+
+    @Test
+    void testTrcAssertionWithoutPatientId() throws Exception {
+        var tokenProvider = new SAMLTokenProvider();
+        tokenProvider.setAttributeStatementProviders(Collections.singletonList(new TrcAttributeStatementProvider()));
+
+        var providerParameters = createProviderParameters();
+        var tokenRequirements = providerParameters.getTokenRequirements();
+
+        Element trcParameters = createTrcParameters(
+                // @formatter:off
+                "<trc:TRCParameters xmlns:trc='http://epsos.eu/trc'>" +
+                "<trc:PurposeOfUse>" + PURPOSE_OF_USE + "</trc:PurposeOfUse>" +
+                "</trc:TRCParameters>"
+                // @formatter:on
+        );
+        tokenRequirements.addCustomContent(trcParameters);
+
+        Assertions.assertThrows(RuntimeException.class, () -> tokenProvider.createToken(providerParameters));
     }
 
     private TokenProviderParameters createProviderParameters() throws WSSecurityException {
@@ -103,20 +162,11 @@ class TrcAttributeStatementProviderTest {
         return parameters;
     }
 
-    private Element createTrcParameters() throws Exception {
+    private Element createTrcParameters(String xml) throws Exception {
         var factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         var builder = factory.newDocumentBuilder();
-        var source = new InputSource();
-        // @formatter:off
-        source.setCharacterStream(new StringReader(
-            "<trc:TRCParameters xmlns:trc='http://epsos.eu/trc'>" +
-            "<trc:PatientId>" + PATIENT_ID + "</trc:PatientId>" +
-            "<trc:PurposeOfUse>" + PURPOSE_OF_USE+ "</trc:PurposeOfUse>" +
-            "<trc:PrescriptionId>"+ PRESCRIPTION_ID + "</trc:PrescriptionId>" +
-            "<trc:DispensationPinCode>"+ DISPENSATION_PIN_CODE + "</trc:DispensationPinCode>" +
-            "</trc:TRCParameters>"));
-        // @formatter:on
+        var source = new InputSource(new StringReader(xml));
         var document = builder.parse(source);
         return document.getDocumentElement();
     }
